@@ -134,6 +134,7 @@ const Select = React.createClass({
 	getInitialState () {
 		return {
 			inputValue: '',
+			isInitOpen: false,
 			isFocused: false,
 			isLoading: false,
 			isOpen: false,
@@ -274,24 +275,49 @@ const Select = React.createClass({
 			});
 		}
 
+		// get value for single select, use label first if present
+		const valueArray = this.getValueArray(this.props.value);
+		const singleOption = !this.props.multi && valueArray.length ? valueArray[0] : {};
+		const value = singleOption.label || this.props.value || '';
+
+		// value used to manually set value of the input field for single, searchable selects
+		const inputValue = !this.props.multi && !this.state.inputValue ? {inputValue: value} : {};
+		
+		// determines if the user mouse downed on the actual ValueComponent (excluding placeholder text)
+		const isOnValue = this.refs.value && (this.refs.value.valueNode === event.target) ? true : false;
+
+		// clears value so that the cursor will be a the end of input then the component re-renders
+		this.refs.input.getInput().value = '';
+		
 		if (this.state.isFocused) {
 			// On iOS, we can get into a state where we think the input is focused but it isn't really,
 			// since iOS ignores programmatic calls to input.focus() that weren't triggered by a click event.
 			// Call focus() again here to be safe.
 			this.focus();
-
-			// clears value so that the cursor will be a the end of input then the component re-renders
-			this.refs.input.getInput().value = '';
-
-			// if the input is focused, ensure the menu is open
-			this.setState({
+		
+			this.setState(Object.assign({}, {
+				isInitOpen: true,
 				isOpen: true,
-				isPseudoFocused: false,
+				isPseudoFocused: false
+			}, 
+				inputValue
+			), function() {
+				isOnValue && this.refs.input.select();
 			});
 		} else {
 			// otherwise, focus the input and open the menu
 			this._openAfterFocus = true;
 			this.focus();
+
+			// check if state should be updated
+			if (inputValue.hasOwnProperty('inputValue')) {
+				this.setState({
+					isInitOpen: true,
+					inputValue: value
+				}, function() {
+					isOnValue && this.refs.input.select();
+				});
+			}
 		}
 	},
 
@@ -327,6 +353,7 @@ const Select = React.createClass({
 
 	closeMenu () {
 		this.setState({
+			isInitOpen: false,
 			isOpen: false,
 			isPseudoFocused: this.state.isFocused && !this.props.multi,
 			inputValue: '',
@@ -356,6 +383,7 @@ const Select = React.createClass({
 			this.props.onBlur(event);
 		}
 		var onBlurredState = {
+			isInitOpen: false,
 			isFocused: false,
 			isOpen: false,
 			isPseudoFocused: false,
@@ -376,6 +404,7 @@ const Select = React.createClass({
 			}
 		}
 		this.setState({
+			isInitOpen: false,
 			isOpen: true,
 			isPseudoFocused: false,
 			inputValue: newInputValue
@@ -498,6 +527,7 @@ const Select = React.createClass({
 		} else {
 			this.setValue(value);
 			this.setState({
+				isInitOpen: false,
 				isOpen: false,
 				inputValue: '',
 				isPseudoFocused: this.state.isFocused,
@@ -533,6 +563,7 @@ const Select = React.createClass({
 		event.preventDefault();
 		this.setValue(this.props.resetValue);
 		this.setState({
+			isInitOpen: false,
 			isOpen: false,
 			inputValue: '',
 		}, this.focus);
@@ -619,6 +650,7 @@ const Select = React.createClass({
 						key={`value-${i}-${value[this.props.valueKey]}`}
 						onClick={onClick}
 						onRemove={this.removeValue}
+						ref="value"
 						value={value}
 						>
 						{renderLabel(value)}
@@ -631,6 +663,7 @@ const Select = React.createClass({
 				<ValueComponent
 					disabled={this.props.disabled}
 					onClick={onClick}
+					ref="value"
 					value={valueArray[0]}
 					>
 					{renderLabel(valueArray[0])}
@@ -712,7 +745,7 @@ const Select = React.createClass({
 	},
 
 	filterOptions (excludeOptions) {
-		var filterValue = this.state.inputValue;
+		var filterValue = this.state.isInitOpen ? '' : this.state.inputValue;
 		var options = this.props.options || [];
 		if (typeof this.props.filterOptions === 'function') {
 			return this.props.filterOptions.call(this, options, filterValue, excludeOptions);
