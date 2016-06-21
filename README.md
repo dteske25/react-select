@@ -43,11 +43,25 @@ The easiest way to use React-Select is to install it from NPM and include it in 
 npm install react-select --save
 ```
 
-You can also use the standalone build by including `dist/react-select.js` and `dist/react-select.css` in your page. If you use this, make sure you have already included the following dependencies:
+At this point you can import react-select and its styles in your application as follows:
 
-* [React](http://facebook.github.io/react/)
-* [classNames](http://jedwatson.github.io/classnames/)
-* [react-input-autosize](https://github.com/JedWatson/react-input-autosize)
+```js
+import Select from 'react-select';
+
+// Be sure to include styles at some point, probably during your bootstrapping
+import 'react-select/dist/react-select.css';
+```
+
+You can also use the standalone build by including `react-select.js` and `react-select.css` in your page. (If you do this though you'll also need to include the dependencies.) For example:
+```html
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.1.0/react.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.1.0/react-dom.min.js"></script>
+<script src="https://npmcdn.com/classnames/index.js"></script>
+<script src="https://npmcdn.com/react-input-autosize/dist/react-input-autosize.js"></script>
+<script src="https://npmcdn.com/react-select/dist/react-select.js"></script>
+
+<link rel="stylesheet" href="https://npmcdn.com/react-select/dist/react-select.css">
+```
 
 
 ## Usage
@@ -250,6 +264,7 @@ function cleanInput(inputValue) {
 	addLabelText	|	string	|	'Add "{label}"?'	|	text to display when `allowCreate` is true
 	allowCreate	|	bool	|	false		|	allow new options to be created in multi mode (displays an "Add \<option> ?" item when a value not already in the `options` array is entered)
 	autoBlur	|	bool | false | Blurs the input element after a selection has been made. Handy for lowering the keyboard on mobile devices
+	autofocus       |       bool    |      undefined        |  autofocus the component on mount
 	autoload 	|	bool	|	true		|	whether to auto-load the default async options set
 	autosize  | bool | true  | If enabled, the input will expand as the length of its value increases
 	backspaceRemoves 	|	bool	|	true	|	whether pressing backspace removes the last item when there is no input value
@@ -296,7 +311,7 @@ function cleanInput(inputValue) {
 	tabSelectsValue	|	bool	|	true	|	whether to select the currently focused value when the `[tab]` key is pressed
 	value 		|	any	|	undefined	|	initial field value
 	valueKey	|	string	|	'value'		|	the option property to use for the value
-	valueRenderer	|	func	|	undefined	|	function which returns a custom way to render the value selected
+	valueRenderer	|	func	|	undefined	|	function which returns a custom way to render the value selected `function (option) {}`
 
 ### Methods
 
